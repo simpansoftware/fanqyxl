@@ -1,5 +1,5 @@
 import { type z } from "zod";
-import { BASE_URL, IS_DEV } from "~/constant";
+import { BASE_URL } from "~/constant";
 
 import { type Schema_Config } from "~/types/schema";
 
@@ -17,7 +17,7 @@ const config: z.input<typeof Schema_Config> = {
    * @default process.env.NEXT_PUBLIC_DOMAIN
    * @fallback process.env.NEXT_PUBLIC_VERCEL_URL
    */
-  basePath: IS_DEV ? "http://localhost:3000" : `https://${BASE_URL}`,
+  basePath: `https://${BASE_URL}`,
 
   /**
    * Show deploy guide dropdown on navbar
@@ -27,7 +27,7 @@ const config: z.input<typeof Schema_Config> = {
    *
    * @default false
    */
-  showGuideButton: true,
+  showGuideButton: false,
 
   /**
    * How long the cache will be stored in the browser
@@ -47,7 +47,7 @@ const config: z.input<typeof Schema_Config> = {
      * Then, copy the folder id and paste it here
      */
     rootFolder:
-      "e0a5fd4f9f7d05d220e517ef3ef4de7acf4277b64a09b916e8ee30703f0d6fd1cdbde87601a667ca61afd1a702e203e6ec;e13a51f76049b2e4e02c5d41",
+      "87fb37aa18f8034f5e55ff9e4471ce407aa6cd09246447fb045db33b2e38cc36ae641a581c73d651844492ecafd37d6fd2;2e8465da6c0d0a1d6e8f2393",
 
     /**
      * If your rootfolder inside a shared drive, you NEED to set this to true
@@ -62,8 +62,8 @@ const config: z.input<typeof Schema_Config> = {
      *
      * Then you need to encrypt it using `/api/internal/encrypt?q=:shared_drive_id` route
      */
-    isTeamDrive: true,
-    sharedDrive: "908f663cfd7fa75a494061c4856f03c76ac72430d9212bb34bc0707d1867cfece98664;5f1d6ec93903f2af7b9cfe2f",
+    isTeamDrive: false,
+    sharedDrive: "593b8fb1e2687c2099e316b3ec5fae9ea12a33887728f664237dc97d543ebc1d95ccd396918b9471874dd161b946cbea8f8f1a519f47f6141e0c9c3074150d2a02be559f9a6d860ab22a6e5383528a0e5d17121836acb67d28d36b7cd7c8bfefb737f497;ec4cdd3f0071785fb3c6bff8",
 
     defaultQuery: ["trashed = false", "(not mimeType contains 'google-apps' or mimeType contains 'folder')"],
     defaultField:
@@ -71,6 +71,30 @@ const config: z.input<typeof Schema_Config> = {
     defaultOrder: "folder, name asc, modifiedTime desc",
     itemsPerPage: 50,
     searchResult: 5,
+
+    /**
+     * Special file name that will be used for certain purposes
+     * These files will be ignored when searching for files
+     * and will be hidden from the files list by default
+     */
+    specialFile: {
+      password: ".password",
+      readme: ".readme.md",
+      /**
+       * Banner will be used for opengraph image for folder
+       * By default, all folder will use default og image
+       */
+      banner: ".banner",
+    },
+    /**
+     * Reason why banner has multiple extensions:
+     * - If I use contains query, it will also match the file or folder that contains the word.
+     *   (e.g: File / folder with the name of "Test Password" will be matched)
+     * - If I use = query, it will only match the exact name, hence the multiple extensions
+     *
+     * You can add more extensions if you want
+     */
+    hiddenFiles: [".password", ".readme.md", ".banner", ".banner.jpg", ".banner.png", ".banner.webp"],
 
     /**
      * By default, the app will use the thumbnail URL from Google Drive
@@ -100,53 +124,7 @@ const config: z.input<typeof Schema_Config> = {
      *
      * Default: 100MB
      */
-    streamMaxSize: 100 * 1024 * 1024,
-
-    /**
-     * Special file name that will be used for certain purposes
-     * These files will be ignored when searching for files
-     * and will be hidden from the files list by default
-     */
-    specialFile: {
-      password: ".password",
-      readme: ".readme.md",
-      /**
-       * Banner will be used for opengraph image for folder
-       * By default, all folder will use default og image
-       */
-      banner: ".banner",
-    },
-    /**
-     * Reason why banner has multiple extensions:
-     * - If I use contains query, it will also match the file or folder that contains the word.
-     *   (e.g: File / folder with the name of "Test Password" will be matched)
-     * - If I use = query, it will only match the exact name, hence the multiple extensions
-     *
-     * You can add more extensions if you want
-     */
-    hiddenFiles: [".password", ".readme.md", ".banner", ".banner.jpg", ".banner.png", ".banner.webp"],
-
-    /**
-     * Allow user to download protected file without password.
-     * If this set to false, download link will have temporary token attached to it
-     * If this set to true, user can download the file without password as long as they have the link
-     *
-     * Default: false
-     */
-    allowDownloadProtectedFile: false,
-    /**
-     * Duration in hours.
-     * In version 2, this will be used for download link expiration.
-     * If you need it under 1 hour, you can use math expression. (e.g: (5 / 60) * 1 = 5 minutes)
-     *
-     * This only affect when the user download the file
-     * For example if you set it for example 30 minutes (0.5)
-     * After 30 minutes, and the user still downloading the file, the download will NOT be interrupted
-     * But if the user refresh the page / trying to download again, the download link will be expired
-     *
-     * Default: 1 hour
-     */
-    temporaryTokenDuration: 1,
+    streamMaxSize: 104857600,
 
     /**
      * Maximum file size that can be downloaded via api routes
@@ -159,7 +137,30 @@ const config: z.input<typeof Schema_Config> = {
      *
      * Default: 4MB
      */
-    maxFileSize: 4 * 1024 * 1024,
+    maxFileSize: 4194304,
+
+    /**
+     * Allow user to download protected file without password.
+     * If this set to false, download link will have temporary token attached to it
+     * If this set to true, user can download the file without password as long as they have the link
+     *
+     * Default: false
+     */
+    allowDownloadProtectedFile: false,
+
+    /**
+     * Duration in hours.
+     * In version 2, this will be used for download link expiration.
+     * If you need it under 1 hour, you can use math expression. (e.g: (5 / 60) * 1 = 5 minutes)
+     *
+     * This only affect when the user download the file
+     * For example if you set it for example 30 minutes (0.5)
+     * After 30 minutes, and the user still downloading the file, the download will NOT be interrupted
+     * But if the user refresh the page / trying to download again, the download link will be expired
+     *
+     * Default: 1 hour
+     */
+    temporaryTokenDuration: 6,
   },
 
   siteConfig: {
@@ -171,11 +172,11 @@ const config: z.input<typeof Schema_Config> = {
      *
      * You can set it to undefined if you don't want to use it
      */
-    siteName: "next-gdrive-index",
-    siteNameTemplate: "%s - %t",
-    siteDescription: "A simple file browser for Google Drive",
+    siteName: "Another File Host",
+    siteNameTemplate: "%t",
+    siteDescription: "A File Host Hosted by Fanqyxl",
     siteIcon: "/logo.svg",
-    siteAuthor: "mbaharip",
+    siteAuthor: "fanqyxl",
     favIcon: "/favicon.png",
     /**
      * Next.js Metadata robots object
@@ -183,7 +184,7 @@ const config: z.input<typeof Schema_Config> = {
      * ref: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots
      */
     robots: "noindex, nofollow",
-    twitterHandle: "@mbaharip_",
+    twitterHandle: "@fanqyxl",
 
     /**
      * Show file extension on the file name
@@ -195,33 +196,6 @@ const config: z.input<typeof Schema_Config> = {
      * Default: false
      */
     showFileExtension: true,
-
-    /**
-     * Footer content
-     * You can also set it to empty array if you don't want to use it
-     *
-     * Basic markdown is supported (bold, italic, and link)
-     * External link will be opened in new tab
-     *
-     * Template:
-     * - {{ year }} will be replaced with the current year
-     * - {{ repository }} will be replaced with the original repository link
-     * - {{ poweredBy }} will be replaced with "Powered by next-gdrive-index", linked to the repository
-     * - {{ author }} will be replaced with author from siteAuthor config above (If it's not set, it will be set to mbaharip)
-     * - {{ version }} will be replaced with the current version
-     * - {{ siteName }} will be replaced with the siteName config above
-     * - {{ handle }} will be replaced with the twitter handle from twitterHandle config above
-     * - {{ creator }} will be replaced with mbaharip if you want to credit me
-     */
-    footer: [
-      { value: "{{ poweredBy }}" },
-      { value: "Made with ❤️ by [**{{ author }}**](https://github.com/mbaharip)" },
-    ],
-    /**
-     * Add page load time on the footer
-     * If you don't want to use it, you can set it to false
-     */
-    experimental_pageLoadTime: false,
 
     /**
      * Site wide password protection
@@ -246,64 +220,8 @@ const config: z.input<typeof Schema_Config> = {
      */
     toaster: {
       position: "bottom-right",
-      duration: 5000,
+      duration: 3000,
     },
-
-    /**
-     * Example item:
-     * {
-     *  icon: string, // icon name from lucide icons (https://lucide.dev/icons/)
-     *  name: string,
-     *  href: string,
-     *  external?: boolean
-     * }
-     */
-    navbarItems: [
-      {
-        icon: "FileText",
-        name: "Documentation",
-        href: "https://github.com/mbahArip/next-gdrive-index/wiki",
-        external: true,
-      },
-      {
-        icon: "Github",
-        name: "Github",
-        href: "https://www.github.com/mbaharip",
-        external: true,
-      },
-      {
-        icon: "Mail",
-        name: "Contact",
-        href: "mailto:support@mbaharip.com",
-      },
-    ],
-
-    /**
-     * Add support / donation links on the navbar
-     * Example item:
-     * {
-     *  name: string,
-     *  currency: string,
-     *  href: string,
-     * }
-     */
-    supports: [
-      {
-        name: "Paypal",
-        currency: "USD",
-        href: "https://paypal.me/mbaharip",
-      },
-      {
-        name: "Ko-fi",
-        currency: "USD",
-        href: "https://ko-fi.com/mbaharip",
-      },
-      {
-        name: "Saweria",
-        currency: "IDR",
-        href: "https://saweria.co/mbaharip",
-      },
-    ],
 
     /**
      * Configuration for file preview
@@ -322,6 +240,78 @@ const config: z.input<typeof Schema_Config> = {
         maxItem: 10,
       },
     },
+
+    /**
+     * Example item:
+     * {
+     *  icon: string, // icon name from lucide icons (https://lucide.dev/icons/)
+     *  name: string,
+     *  href: string,
+     *  external?: boolean
+     * }
+     */
+    navbarItems: [
+  {
+    "icon": "MessagesSquare",
+    "name": "Discord",
+    "href": "https://discord.com/users/889531799691227236",
+    "external": true
+  },
+  {
+    "icon": "Link",
+    "name": "Website",
+    "href": "https://fanqyxl.net",
+    "external": false
+  },
+  {
+    "icon": "Globe",
+    "name": "E-Z Bio",
+    "href": "https://e-z.bio/fanqyxl",
+    "external": false
+  }
+],
+
+    /**
+     * Add support / donation links on the navbar
+     * Example item:
+     * {
+     *  name: string,
+     *  currency: string,
+     *  href: string,
+     * }
+     */
+    supports: [],
+
+    /**
+     * Footer content
+     * You can also set it to empty array if you don't want to use it
+     *
+     * Basic markdown is supported (bold, italic, and link)
+     * External link will be opened in new tab
+     *
+     * Template:
+     * - {{ year }} will be replaced with the current year
+     * - {{ repository }} will be replaced with the original repository link
+     * - {{ poweredBy }} will be replaced with "Powered by next-gdrive-index", linked to the repository
+     * - {{ author }} will be replaced with author from siteAuthor config above (If it's not set, it will be set to mbaharip)
+     * - {{ version }} will be replaced with the current version
+     * - {{ siteName }} will be replaced with the siteName config above
+     * - {{ handle }} will be replaced with the twitter handle from twitterHandle config above
+     * - {{ creator }} will be replaced with mbaharip if you want to credit me
+     */
+    footer: [
+  {
+    "value": "{{ poweredBy }}"
+  },
+  {
+    "value": "Made with ❤️ by [**{{ author }}**](https://github.com/fanqyxl)"
+  }
+],
+    /**
+     * Add page load time on the footer
+     * If you don't want to use it, you can set it to false
+     */
+    experimental_pageLoadTime: false,
   },
 };
 
